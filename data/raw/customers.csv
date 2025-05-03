@@ -1,0 +1,6 @@
+gender,age,contract_length,churn
+Male,34,12,0
+Female,45,6,1
+Male,23,24,0
+Female,50,1,1
+Male,29,18,0

@@ -1,2 +1,3 @@
-# summerizedText
-AI Text Summarizer
+# ML Churn Prediction
+
+This project predicts customer churn using scikit-learn.
