@@ -43,22 +43,28 @@ async def nextWordPrediction(text):
 
 async def model_creation(total_words,max_sequence_len,X,y):
     # Define the model
-    model = Sequential()
+    # model = Sequential()
     # Le nombre de mots a gérér par model input_dim
-    model.add(Embedding(input_dim = total_words, output_dim = 10, input_length=max_sequence_len-1))
+    # model.add(Embedding(input_dim = total_words, output_dim = 10, input_length=max_sequence_len-1))
     # Aide à limiter les poids trop grands => kernel_regularizer
     # LSTM plus petit (64 unités) → diminue la complexité.
-    model.add(LSTM(units=64,kernel_regularizer=tf.keras.regularizers.l2(0.002),activation="tanh",return_sequences=False))
-    # model.add(GRU(units=128,kernel_regularizer=tf.keras.regularizers.l2(0.002),activation="tanh",return_sequences=False))
-    model.add(Dropout(0.2))
-    model.add(Dense(units= total_words, activation='softmax'))
+    # model.add(LSTM(units=64,kernel_regularizer=tf.keras.regularizers.l2(0.002),activation="tanh",return_sequences=False))
+    # model.add(Dropout(0.2))
+    # model.add(Dense(units= total_words, activation='softmax'))
+
+    model = Sequential()
+    model.add(Embedding(total_words, 10, input_length=max_sequence_len-1))
+    model.add(LSTM(64, return_sequences=True))
+    model.add(LSTM(32))
+    model.add(Dense(128, activation="relu"))
+    model.add(Dense(total_words, activation="softmax"))
     model.compile(loss='categorical_crossentropy',
                 optimizer='adam', metrics=['accuracy'])
     
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
     #  évite un entraînement trop long quand la validation n’améliore plus.
     es = EarlyStopping(monitor='val_loss', patience=100, restore_best_weights=True)
-    model.fit(X_train, y_train, epochs=500,validation_data =(X_test,y_test), callbacks=[es], verbose=2)
+    model.fit(X_train, y_train, epochs=150, batch_size=64,validation_data =(X_test,y_test), callbacks=[es], verbose=2)
 
     os.makedirs('src/models/savedModels/models', exist_ok=True)
     with open('src/models/savedModels/model_nextWordPrediction.pkl', 'wb') as f:
