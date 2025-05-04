@@ -20,7 +20,7 @@ async def nextWordPrediction(text):
 
   # L’argument oov_token="<OOV>" permet de remplacer les mots rares par un token spécial "Out Of Vocabulary", utile pour ne pas perdre l’information complètement.
   # num_words=2000, oov_token="<OOV>"
-  tokenizer = Tokenizer()
+  tokenizer = Tokenizer(lower=True)
   tokenizer.fit_on_texts(sentences)
   total_words = len(tokenizer.word_index) + 1 
   
@@ -36,41 +36,52 @@ async def nextWordPrediction(text):
     input_sequences, maxlen=max_sequence_len, padding='pre'))
   X, y = input_sequences[:, :-1], input_sequences[:, -1]
   # Convert target data to one-hot encoding
-  # to_categorical transforme chaque entier en un vecteur binaire de taille total_words, où seule la case correspondant à l'indice est à 1.
+  # to_categorical transforme chaque entier en un vecteur binaire de taille total_words, où seule la case correspondant à l'indice est à 1..
+  # one-hot categorical
   y = tf.keras.utils.to_categorical(y, num_classes=total_words)
   model = await model_creation(total_words,max_sequence_len,X,y)
   await Test(tokenizer,model,max_sequence_len)
 
 async def model_creation(total_words,max_sequence_len,X,y):
     # Define the model
-    # model = Sequential()
+    model = Sequential()
     # Le nombre de mots a gérér par model input_dim
-    # model.add(Embedding(input_dim = total_words, output_dim = 10, input_length=max_sequence_len-1))
+    model.add(Embedding(input_dim = total_words, output_dim = 10, input_length=max_sequence_len-1))
     # Aide à limiter les poids trop grands => kernel_regularizer
     # LSTM plus petit (64 unités) → diminue la complexité.
-    # model.add(LSTM(units=64,kernel_regularizer=tf.keras.regularizers.l2(0.002),activation="tanh",return_sequences=False))
-    # model.add(Dropout(0.2))
-    # model.add(Dense(units= total_words, activation='softmax'))
+    model.add(LSTM(units=64,kernel_regularizer=tf.keras.regularizers.l2(0.001),activation="tanh",return_sequences=False))
+    model.add(Dropout(0.1))
+    model.add(Dense(units= total_words, activation='softmax')) # Elle transforme les logits (valeurs brutes) de la dernière couche en probabilités sur toutes les classes  entre 0 et 1 
 
-    model = Sequential()
-    model.add(Embedding(total_words, 10, input_length=max_sequence_len-1))
-    model.add(LSTM(64, return_sequences=True))
-    model.add(LSTM(32))
-    model.add(Dense(128, activation="relu"))
-    model.add(Dense(total_words, activation="softmax"))
+    # model = Sequential()
+    # model.add(Embedding(total_words, 10, input_length=max_sequence_len-1))
+    # model.add(LSTM(64, return_sequences=True))
+    # model.add(LSTM(32))
+    # model.add(Dense(128, activation="relu"))
+    # model.add(Dense(total_words, activation="softmax")) 
+
     model.compile(loss='categorical_crossentropy',
                 optimizer='adam', metrics=['accuracy'])
     
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
     #  évite un entraînement trop long quand la validation n’améliore plus.
-    es = EarlyStopping(monitor='val_loss', patience=100, restore_best_weights=True)
-    model.fit(X_train, y_train, epochs=150, batch_size=64,validation_data =(X_test,y_test), callbacks=[es], verbose=2)
+    # es = EarlyStopping(monitor='val_loss', patience=100, restore_best_weights=True) => "callbacks=[es],
+    model.fit(X_train, y_train, epochs=500,validation_data =(X_test,y_test),  verbose=2)
 
     os.makedirs('src/models/savedModels/models', exist_ok=True)
     with open('src/models/savedModels/model_nextWordPrediction.pkl', 'wb') as f:
         pickle.dump(model, f)
     
     y_pred = model.predict(X_test)
+    # y_pred = [
+    # [0.1, 0.05, 0.8, 0.05],   # prédiction 1 → classe 2 (index 2)
+    # [0.03, 0.9, 0.05, 0.02]   # prédiction 2 → classe 1 (index 1)]
+    # y_pred_classes = [2, 1]
+    
+    # y_test = [
+    # [0, 0, 1, 0],   # vraie classe : 2
+    # [0, 1, 0, 0]    # vraie classe : 1]
+    # y_test_classes = [2, 1]
 
     y_pred_classes = np.argmax(y_pred, axis=1)
     y_test_classes = np.argmax(y_test, axis=1)
@@ -82,7 +93,7 @@ async def model_creation(total_words,max_sequence_len,X,y):
 
 async def Test(tokenizer,model,max_sequence_len):
     # Generate next word predictions
-    seed_text = "machine learning different "
+    seed_text = "machine learning is "
     next_words = 5
 
     for _ in range(next_words):
