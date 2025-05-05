@@ -7,7 +7,7 @@ import uvicorn
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))) 
 
 from models.summarizer_model import summairizing
-from predict.predict import predict
+from predict.predict import predict,predictNextWord
 
 
 class InputData(BaseModel):
@@ -29,6 +29,11 @@ async def get_prediction(data: InputData):
 @app.post("/summerizing")
 async def get_summerizing(input: InputText):
     result = asyncio.run(summairizing(input.text))
+    return {"Output": result}
+
+@app.post("/nextWordPrediction")
+async def get_nextWordPrediction(input: InputText):
+    result = predictNextWord(input.text)
     return {"Output": result}
 
 if __name__ == '__main__':

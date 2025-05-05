@@ -6,11 +6,18 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.callbacks import EarlyStopping
 import numpy as np
 import regex as re
+import sys
 import os
 import asyncio
 import pickle
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
+
+
+# On obtient le chemin vers : summerizedText/
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../data"))) 
+import load_data as ld
+
 
 async def nextWordPrediction(text):
   sentences = [text.strip() for text in re.split(
@@ -23,7 +30,9 @@ async def nextWordPrediction(text):
   tokenizer = Tokenizer(lower=True)
   tokenizer.fit_on_texts(sentences)
   total_words = len(tokenizer.word_index) + 1 
-  
+  with open('src/models/savedModels/tokenizer_next_word.pkl', 'wb') as f:
+        pickle.dump(tokenizer, f)
+
   input_sequences = []
   for line in sentences:
     token_list = tokenizer.texts_to_sequences([line])[0]
@@ -49,9 +58,10 @@ async def model_creation(total_words,max_sequence_len,X,y):
     model.add(Embedding(input_dim = total_words, output_dim = 10, input_length=max_sequence_len-1))
     # Aide à limiter les poids trop grands => kernel_regularizer
     # LSTM plus petit (64 unités) → diminue la complexité.
-    model.add(LSTM(units=64,kernel_regularizer=tf.keras.regularizers.l2(0.001),activation="tanh",return_sequences=False))
-    model.add(Dropout(0.1))
-    model.add(Dense(units= total_words, activation='softmax')) # Elle transforme les logits (valeurs brutes) de la dernière couche en probabilités sur toutes les classes  entre 0 et 1 
+    model.add(LSTM(units=32,activation="tanh",return_sequences=True))
+    model.add(LSTM(32, activation="tanh", return_sequences=False))
+    model.add(Dense(units=16, activation='relu'))
+    model.add(Dense(units= total_words, activation='softmax'))  # Elle transforme les logits (valeurs brutes) de la dernière couche en probabilités sur toutes les classes  entre 0 et 1 
 
     # model = Sequential()
     # model.add(Embedding(total_words, 10, input_length=max_sequence_len-1))
@@ -66,7 +76,7 @@ async def model_creation(total_words,max_sequence_len,X,y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
     #  évite un entraînement trop long quand la validation n’améliore plus.
     # es = EarlyStopping(monitor='val_loss', patience=100, restore_best_weights=True) => "callbacks=[es],
-    model.fit(X_train, y_train, epochs=500,validation_data =(X_test,y_test),  verbose=2)
+    model.fit(X_train, y_train, epochs=300,batch_size=64, validation_data =(X_test,y_test),  verbose=2)
 
     os.makedirs('src/models/savedModels/models', exist_ok=True)
     with open('src/models/savedModels/model_nextWordPrediction.pkl', 'wb') as f:
@@ -138,24 +148,6 @@ In the future, AI is expected to transform various fields such as healthcare, ed
 AI-driven innovations can lead to more efficient processes, cost reductions, and new capabilities.
 However, it also poses challenges, such as potential job displacement and the need for re-skilling the workforce.
 By combining human insight with machine efficiency, the future of AI holds great promise and responsibility.
-
-In materials science, the discovery of recipes that yield nanomaterials with defined optical properties is costly and time-consuming. 
-In this study, we present a two-step framework for a machine learning-driven high-throughput microfluidic platform 
-to rapidly produce silver nanoparticles with the desired absorbance spectrum. Combining a Gaussian process-based Bayesian optimization 
-(BO) with a deep neural network (DNN), the algorithmic framework is able to converge towards the target spectrum after sampling 120 conditions.
-Once the dataset is large enough to train the DNN with sufficient accuracy in the region of the target spectrum, the DNN is used to predict the colour palette
-accessible with the reaction synthesis. While remaining interpretable by humans, the proposed framework efficiently optimizes the nanomaterial synthesis and 
-can extract fundamental knowledge of the relationship between chemical composition and optical properties, such as the role of each reactant on the shape and amplitude of the absorbance spectrum.
-
-In recent years, machine learning (ML) methods have been applied to solve various problems in materials science, 
-such as drug discovery1,2, medical imaging3, material synthesis4,5, functional molecules generation6,7,
-and materials degradation8. Since the generation of experimental data in materials science is costly and time-consuming,
-ML algorithms have been mainly developed based on computational data or, when available, experimental datasets gathered from the literature9.
-However, once material is suggested by the ML algorithm, the material synthesis can turn out to be difficult, or even impossible. The recent development
-of microfluidic high-throughput experimental (HTE) platforms now allows the generation of a large amount of experimental synthesis data with small amounts of material10,11,12,13. 
-The integration of the ML algorithms in a loop with these flow chemistry platforms would ensure that ML algorithms suggest only those materials that can be synthesized. 
-Such attempts have been made in nanomaterial synthesis14,15. However, 
-these studies are limited to optimization problems and focus on sparse datasets, while large datasets would be needed to extract knowledge on how the chemical 
-composition and process parameters influence the final outcome16.
 """
+text = ld.loadTxtData('data/raw/metamorphosis_clean.txt')
 asyncio.run(nextWordPrediction(text))

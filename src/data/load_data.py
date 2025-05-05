@@ -39,5 +39,4 @@ def loadTxtData(path):
 
     # Recompose le texte avec des points
     final_text = '. '.join(cleaned_sentences) + '.'
-    print(final_text)
     return final_text
