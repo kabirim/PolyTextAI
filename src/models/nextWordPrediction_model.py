@@ -63,13 +63,6 @@ async def model_creation(total_words,max_sequence_len,X,y):
     model.add(Dense(units=16, activation='relu'))
     model.add(Dense(units= total_words, activation='softmax'))  # Elle transforme les logits (valeurs brutes) de la dernière couche en probabilités sur toutes les classes  entre 0 et 1 
 
-    # model = Sequential()
-    # model.add(Embedding(total_words, 10, input_length=max_sequence_len-1))
-    # model.add(LSTM(64, return_sequences=True))
-    # model.add(LSTM(32))
-    # model.add(Dense(128, activation="relu"))
-    # model.add(Dense(total_words, activation="softmax")) 
-
     model.compile(loss='categorical_crossentropy',
                 optimizer='adam', metrics=['accuracy'])
     
