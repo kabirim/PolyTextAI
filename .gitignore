@@ -1,0 +1,47 @@
+# 🔒 Environnements virtuels
+venv/
+ml-env/
+
+# 🧹 Fichiers temporaires Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 🧪 Fichiers de test et logs
+*.log
+*.tmp
+*.bak
+
+# 📦 Fichiers de dépendances compilés
+*.egg-info/
+*.egg
+dist/
+build/
+
+# 💾 Données sensibles ou trop lourdes
+#data/raw/
+#data/processed/
+#*.csv
+#*.tsv
+#*.json
+#*.zip
+
+# 📓 Fichiers Jupyter Notebook
+.ipynb_checkpoints/
+
+# ⚙️ IDE & OS files
+.vscode/
+*.DS_Store
+Thumbs.db
+
+# 🧠 Modèles et checkpoints
+models/
+checkpoints/
+*.pt
+*.pth
+*.h5
+*.ckpt
+
+# ⚙️ Environnement conda (facultatif)
+env/

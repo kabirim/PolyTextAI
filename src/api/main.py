@@ -8,7 +8,7 @@ import uvicorn
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))) 
 
 from models.summarizer_model import summairizing
-from predict.predict import predict,predictNextWord,predictAnswer
+from predict.predict import predict,predictNextWord,predictAnswer,get_best_correction
 
 class InputData(BaseModel):
     gender: int
@@ -44,6 +44,11 @@ async def get_nextWordPrediction(input: InputText):
 @app.post("/answerPredicition")
 async def get_answerPredicition(input: InputQA):
     result = predictAnswer(input)
+    return {"Output": result}
+
+@app.post("/autocorrector")
+async def get_autocorrector(input: InputText):
+    result = get_best_correction(input)
     return {"Output": result}
 
 if __name__ == '__main__':

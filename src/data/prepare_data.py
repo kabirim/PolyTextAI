@@ -45,7 +45,7 @@ def extract_all_words_sequences():
     # Écriture des mots dans le fichier, un par ligne
     with open(processed_path, 'w', encoding='utf-8') as f:
         for word in words:
-            f.write(word + '\n')
+            f.write(word + ',')
     print(f'Data prepared and saved to {processed_path}')
 
 # Exécute prepare_data() seulement si ce fichier est exécuté directement, et non pas s’il est importé comme module dans un autre fichier
