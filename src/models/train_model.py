@@ -8,15 +8,15 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
 from data.load_data import *
 
 def train():
-    df = load_data('../data/data/processed/train.csv')
+    df = loadCsv_data('src/data/data/processed/train.csv')
     X = df.drop('churn', axis=1)
     y = df['churn']
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
     model = RandomForestClassifier()
     model.fit(X_train, y_train)
     
-    os.makedirs('models', exist_ok=True)
-    with open('models/model.pkl', 'wb') as f:
+    os.makedirs('src/models/savedModels', exist_ok=True)
+    with open('src/models/savedModels/model.pkl', 'wb') as f:
         pickle.dump(model, f)
     
     y_pred = model.predict(X_test)

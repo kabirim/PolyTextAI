@@ -12,12 +12,21 @@ def prepare_data():
     if not os.path.exists(raw_path):
         raise FileNotFoundError(f'{raw_path} not found')
 
-    df = ld.load_data(raw_path)
+    df = ld.loadCsv_data(raw_path)
     df = encode_features(df)
     os.makedirs(os.path.dirname(processed_path), exist_ok=True)
     df.to_csv(processed_path, index=False)
     print(f'Data prepared and saved to {processed_path}')
 
+def read_text_data():
+    raw_path = 'data/raw/metamorphosis_clean.txt'
+
+    if not os.path.exists(raw_path):
+        raise FileNotFoundError(f'{raw_path} not found')
+    
+    df = ld.loadTxtData(raw_path)
+    print(f'Data prepared and saved to {df}')
+
 # Exécute prepare_data() seulement si ce fichier est exécuté directement, et non pas s’il est importé comme module dans un autre fichier
 if __name__ == '__main__':
-    prepare_data()
+    read_text_data()
