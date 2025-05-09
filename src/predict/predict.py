@@ -1,8 +1,13 @@
 import pickle
 import pandas as pd
 import numpy as np
+import sys
+import os
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))) 
+from models.questions_answering_bert_squandV1 import give_an_answer
+from models.autocorrector_model import get_best_correction
 
 def predict(input_dict):
     with open('src/models/models/model.pkl', 'rb') as f:
@@ -30,3 +35,9 @@ def predictNextWord(inputText):
         seed_text += " " + predicted_word
 
     return seed_text
+
+def predictAnswer(inputObject):
+    return give_an_answer(inputObject.context, inputObject.querie,inputObject.answer)
+
+def get_best_correction(word, probs, vocab, max_suggestions=3):
+     return get_best_correction(word, probs, vocab, max_suggestions=3)

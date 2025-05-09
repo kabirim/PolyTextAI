@@ -1,14 +1,14 @@
 import pandas as pd
 import string
 import re
-from nltk.tokenize import word_tokenize,sent_tokenize
 import nltk
+from nltk.tokenize import word_tokenize,sent_tokenize
 from nltk.tokenize.treebank import TreebankWordDetokenizer
 
 def loadCsv_data(path):
     return pd.read_csv(path)
 
-def loadTxtData(path):
+def loadTxt_data_and_clean(path):
     with open(path, "r", encoding="utf8") as file:
         data = file.read()
 
@@ -40,3 +40,8 @@ def loadTxtData(path):
     # Recompose le texte avec des points
     final_text = '. '.join(cleaned_sentences) + '.'
     return final_text
+
+def loadfileTxt(path):
+    with open(path, "r", encoding="utf8") as file:
+        data = file.read()
+    return data
