@@ -32,7 +32,7 @@ def loadTxtData(path):
         # ['I', "'m", 'learning', 'NLP', '!']
         tokens = word_tokenize(sentence)
         words = [word for word in tokens if re.match(r"[A-Za-z0-9']+$", word)]
-        #  Reconstituer une phrase à partir d’une liste de tokens. Utilisé pour retrouver un texte à partir de mots séparés
+        # Reconstituer une phrase à partir d’une liste de tokens. Utilisé pour retrouver un texte à partir de mots séparés
         # tokens = ['I', "'m", 'learning', 'NLP', '!'] => "I'm learning NLP!"
         cleaned_sentence = detokenizer.detokenize(words)
         cleaned_sentences.append(cleaned_sentence)
