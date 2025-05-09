@@ -1,9 +1,9 @@
 from transformers import BertForQuestionAnswering,AutoTokenizer
 import torch
 
- # Define the bert tokenizer squad v1
+# Define the bert tokenizer squad v1
 tokenizer = AutoTokenizer.from_pretrained('bert-large-uncased-whole-word-masking-finetuned-squad')
-    # Load the fine-tuned model
+# Load the fine-tuned model
 model = BertForQuestionAnswering.from_pretrained('bert-large-uncased-whole-word-masking-finetuned-squad')
 model.eval()
 
@@ -66,6 +66,7 @@ def give_an_answer(context,query,answer=None):
     # print(f"F1: {f1_score}")
     # print("\n")
     return prediction
+
 if __name__ == '__main__':
     context = "Hi! My name is Alexa and I am 21 years old. I used to live in Peristeri of Athens, but now I moved on in Kaisariani of Athens."
     queries = ["How old is Alexa?",
@@ -76,6 +77,5 @@ if __name__ == '__main__':
             "Kaisariani of Athens",
             "Peristeri of Athens"
             ]
-
     for q,a in zip(queries,answers):
         give_an_answer(context,q,a) 

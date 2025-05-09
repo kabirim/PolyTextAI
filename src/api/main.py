@@ -10,7 +10,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
 from models.summarizer_model import summairizing
 from predict.predict import predict,predictNextWord,predictAnswer
 
-
 class InputData(BaseModel):
     gender: int
     age: int
@@ -30,7 +29,7 @@ app = FastAPI(swagger_ui_parameters={"syntaxHighlight": {"theme": "obsidian"}})
 async def get_prediction(data: InputData):
     input_dict = data.model_dump()  
     prediction = predict(input_dict)
-    return {"prediction": int(prediction)} # ← conversion ici obligatoire
+    return {"prediction": int(prediction)}
 
 @app.post("/summerizing")
 async def get_summerizing(input: InputText):
