@@ -4,7 +4,7 @@ from transformers import BertTokenizerFast, BertForQuestionAnswering, TrainingAr
 from datasets import load_dataset
 import torch
 from torch.utils.data import DataLoader
-from transformers import AdamW
+from torch.optim import AdamW
 
 tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
 model = BertForQuestionAnswering.from_pretrained('bert-base-uncased')
@@ -21,7 +21,7 @@ class SquadDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.encodings.input_ids)
 
-# Accéder aux ensembles d'entraînement et de validation
+# Access training and validation sets
 train_data = dataset["train"]
 val_data = dataset["validation"]
 
@@ -43,12 +43,15 @@ def load_squad_train_data():
     for q in train_data:
         texts.append(q['context'])
         questions.append(q['question'])
-        answers.append(q['answers']) # Dictionnaire avec 'text' et 'answer_start'
+        answers.append(q['answers'])
 
     return texts, questions, answers
 
 # Preprocess the data to find answer start and end positions
 train_texts, train_queries, train_answers = load_squad_train_data()
+train_texts = train_texts[:20]
+train_queries = train_queries[:20]
+train_answers = train_answers[:20]
 
 def load_squad_validation_data():
     texts = []
@@ -57,54 +60,68 @@ def load_squad_validation_data():
     for q in val_data:
        texts.append(q['context'])
        questions.append(q['question'])
-       answers.append(q['answers']) # Dictionnaire avec 'text' et 'answer_start'
+       answers.append(q['answers'])
 
     return texts, questions, answers
 
 # Preprocess the data to find answer start and end positions
 val_texts, val_queries, val_answers = load_squad_validation_data()
+# val_texts = val_texts[:6]
+# val_queries = val_queries[:6]
+# val_answers = val_answers[:6]
 
 # Find the start and end position character
 def find_start_end_train_answer_position():
     for (answer, text) in zip(train_answers,train_texts):
-        real_answer = answer['text']
-        start_index = answer['answer_start']
-         # Get the real end index
-        end_index = start_index + len(real_answer)
-
-        # S’assurer que la chaîne real_answer correspond bien à un extrait du text (le contexte), en ajustant l’index si besoin.
-        if text[start_index:end_index] == real_answer:
-            answer['answer_end'] = end_index
-        elif text[start_index-1:end_index-1] == real_answer:
-            answer['answer_start'] = start_index - 1
-            answer['answer_end'] = end_index - 1
-        elif text[start_index-2:end_index-2] == real_answer:
-            answer['answer_start'] = start_index - 2
-            answer['answer_end'] = end_index - 2
-
+        if answer['text']:
+            real_answer = answer['text'][0]
+            if answer['answer_start']:
+                start_index = int(answer['answer_start'][0])
+                # Get the real end index
+                end_index = start_index + len(real_answer)
+                # Ensure that the real_answer string corresponds to an extract of the text (the context), adjusting the index if necessary
+                if text[start_index:end_index] == real_answer:
+                    answer['answer_end'] = end_index
+                    answer['answer_start'] = start_index 
+                elif text[start_index-1:end_index-1] == real_answer:
+                    answer['answer_start'] = start_index - 1
+                    answer['answer_end'] = end_index - 1
+                elif text[start_index-2:end_index-2] == real_answer:
+                    answer['answer_start'] = start_index - 2
+                    answer['answer_end'] = end_index - 2
+                
 find_start_end_train_answer_position()
 
 def find_start_end_validation_answer_position():
     for (answer, text) in zip(val_answers,val_texts):
-        real_answer = answer['text']
-        start_index = answer['answer_start']
-         # Get the real end index
-        end_index = start_index + len(real_answer)
+        if answer['text']:
+            if isinstance(answer['text'], list) and len(answer['text']) > 1:
+                answer['text'] = [answer['text'][0]]
+            real_answer = answer['text']
+            if answer['answer_start']:
+                if isinstance(answer['answer_start'], list) and len(answer['answer_start']) > 1:
+                    answer['answer_start'] = [answer['answer_start'][0]]
+                start_index = int(answer['answer_start'][0])
+                # Get the real end index
+                end_index = start_index + len(real_answer)
+                # Ensure that the real_answer string corresponds to an extract of the text (the context), adjusting the index if necessary
+                if text[start_index:end_index] == real_answer:
+                    answer['answer_end'] = end_index
+                    answer['answer_start'] = start_index 
+                elif text[start_index-1:end_index-1] == real_answer:
+                    answer['answer_start'] = start_index - 1
+                    answer['answer_end'] = end_index - 1
+                elif text[start_index-2:end_index-2] == real_answer:
+                    answer['answer_start'] = start_index - 2
+                    answer['answer_end'] = end_index - 2
+# TODO
+# find_start_end_validation_answer_position()
 
-        # S’assurer que la chaîne real_answer correspond bien à un extrait du text (le contexte), en ajustant l’index si besoin.
-        if text[start_index:end_index] == real_answer:
-            answer['answer_end'] = end_index
-        elif text[start_index-1:end_index-1] == real_answer:
-            answer['answer_start'] = start_index - 1
-            answer['answer_end'] = end_index - 1
-        elif text[start_index-2:end_index-2] == real_answer:
-            answer['answer_start'] = start_index - 2
-            answer['answer_end'] = end_index - 2
-
-find_start_end_validation_answer_position()
 # Tokenize passages and queries
+# truncation = True => cuts sequences that are too long to stay within the model limit (e.g. 512 tokens max for BERT)
+# padding = True => add 0s to make all sequences the same length (batch alignment)
 train_encodings  = tokenizer(train_texts,train_queries, truncation = True, padding= True)
-val_encodings = tokenizer(val_texts, val_queries, truncation = True, padding = True)
+#val_encodings = tokenizer(val_texts, val_queries, truncation = True, padding = True)
 
 #{
 #  'input_ids': [[101, 2054, 2003, 1996, 3007, 1997, 2605, 1029, 102, 3000, 2003, 1996, 3007, 1997, 2605, 1012, 102]],
@@ -114,8 +131,7 @@ val_encodings = tokenizer(val_texts, val_queries, truncation = True, padding = T
 
 #input_ids : IDs des tokens du texte + question, concaténés. Ces IDs sont les entrées principales du modèle BERT.
 #token_type_ids : Indique quelles parties sont la question (0) et quelles parties sont le contexte (1).
-#attention_mask : Valeur 1 pour les tokens à garder, 0 pour ceux à ignorer (padding).
-
+#attention_mask : Valeur 1 pour les tokens à lire, 0 pour ceux à ignorer (padding).
 
 # Convert the start-end positions to tokens start-end positions
 def add_token_positions(encodings, answers):
@@ -123,7 +139,7 @@ def add_token_positions(encodings, answers):
     end_positions = []
     
     count = 0
-    for i in (len(answers)):
+    for i in range(len(answers)):
         start_positions.append(encodings.char_to_token(i, answers[i]['answer_start']))
         end_positions.append(encodings.char_to_token(i, answers[i]['answer_end']))
         # if start position is None, the answer passage has been truncated
@@ -144,20 +160,21 @@ def add_token_positions(encodings, answers):
     encodings.update({'start_positions': start_positions, 'end_positions': end_positions})
 
 add_token_positions(train_encodings, train_answers)
-add_token_positions(val_encodings, val_answers)
+# TODO
+# add_token_positions(val_encodings, val_answers)
 
-# Avant de passer les données dans BERT, tu dois :
-# Tokeniser le contexte et la question.
-# Encoder les positions de la réponse (start/end).
-# Convertir tout ça en tensors PyTorch.
+# Avant de passer les données dans BERT, on doit :
+# Tokeniser le contexte et la question
+# Encoder les positions de la réponse (start/end)
+# Convertir tout ça en tensors PyTorch
 
 # Create a Dataset class
-train_dataset = SquadDataset(train_encodings.select(range(6)))
-val_dataset = SquadDataset(val_encodings.select(range(6)))
+train_dataset = SquadDataset(train_encodings)
+# val_dataset = SquadDataset(val_encodings.select(range(6)))
 
 # Use of DataLoader
 train_loader = DataLoader(train_dataset, batch_size=6, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=6, shuffle=True)
+# val_loader = DataLoader(val_dataset, batch_size=6, shuffle=True)
 
 # Train and Evaluate Model
 optim = AdamW(model.parameters(), lr=5e-5)
@@ -185,16 +202,16 @@ for epoch in range(epochs):
         start_positions = batch['start_positions']
         end_positions = batch['end_positions']
         
-        loss, _, _  = model(input_ids, attention_mask=attention_mask, start_positions=start_positions, end_positions=end_positions)
+        outputs = model(input_ids, attention_mask=attention_mask, start_positions=start_positions, end_positions=end_positions)
         # do a backwards pass 
-        loss.backward()
+        outputs.loss.backward()
         # update the weights
         optim.step()
         # Find the total loss
-        total_train_loss += loss.item()
+        total_train_loss += outputs.loss.item()
         
         if (batch_idx+1) % print_every == 0:
-            print("Batch {:} / {:}".format(batch_idx+1,len(train_loader)),"\nLoss:", round(loss.item(),1),"\n")
+            print("Batch {:} / {:}".format(batch_idx+1,len(train_loader)),"\nLoss:", round(outputs.loss.item(),1),"\n")
         
     total_train_loss /= len(train_loader)
     train_losses.append(total_train_loss)
@@ -202,49 +219,48 @@ for epoch in range(epochs):
     ##########Evaluation##################
     
     # Set model in evaluation mode
-    model.eval()
+    # model.eval()
     
-    print("############Evaluate############")
+    # print("############Evaluate############")
     
-    total_val_loss = 0
+    # total_val_loss = 0
     
-    for batch_idx,batch in enumerate(val_loader):
+    # for batch_idx,batch in enumerate(val_loader):
         
-        with torch.no_grad():
+    #     with torch.no_grad():
             
-            input_ids = batch['input_ids']
-            attention_mask = batch['attention_mask']
-            start_positions = batch['start_positions']
-            end_positions = batch['end_positions']
+    #         input_ids = batch['input_ids']
+    #         attention_mask = batch['attention_mask']
+    #         start_positions = batch['start_positions']
+    #         end_positions = batch['end_positions']
             
-            loss, _, _ = model(input_ids, attention_mask=attention_mask, start_positions=start_positions, end_positions=end_positions)
-            total_val_loss += loss.item()
+    #         loss, _, _ = model(input_ids, attention_mask=attention_mask, start_positions=start_positions, end_positions=end_positions)
+    #         total_val_loss += loss.item()
             
-        if (batch_idx+1) % print_every == 0:
-            print("Batch {:} / {:}".format(batch_idx+1,len(val_loader)),"\nLoss:", round(loss.item(),1),"\n")
+    #     if (batch_idx+1) % print_every == 0:
+    #         print("Batch {:} / {:}".format(batch_idx+1,len(val_loader)),"\nLoss:", round(loss.item(),1),"\n")
     
-    total_val_loss /= len(val_loader)
-    val_losses.append(total_val_loss)
+    # total_val_loss /= len(val_loader)
+    # val_losses.append(total_val_loss)
     
-    # Print each epoch's time and train/val loss 
-    
+    # Print each epoch's time and train/val loss     
     print("\n-------Epoch ", epoch+1,
           "-------"
           "\nTraining Loss Avg:", train_losses[-1],
-          "\nValidation Loss Avg:", val_losses[-1],
+        #   "\nValidation Loss Avg:", val_losses[-1],
           "\nTime: ",(time.time() - epoch_time),
           "\n-----------------------",
           "\n\n")
 
 print("Total training and evaluation time: ", (time.time() - whole_train_eval_time))
 
-# Cette fonction fait une prédiction de réponse à partir d’un contexte (texte) et d’une question.
+# Cette fonction fait une prédiction de réponse à partir d’un contexte (texte) et d’une question
 def predict(context,query):
     
-    # query (la question) est mise avant context (le passage) comme c’est la norme en QA.
+    # query (la question) est mise avant context (le passage) comme c’est la norme en QA
     inputs = tokenizer.encode_plus(query, context, return_tensors='pt')
     outputs = model(**inputs)
-    # On prend l’indice avec la valeur la plus élevée = prédiction la plus probable.
+    # On prend l’indice avec la valeur la plus élevée = prédiction la plus probable
     # get the most likely beginning of answer with the argmax of the score
     answer_start = torch.argmax(outputs[0]) # index du début de la réponse 
     answer_end = torch.argmax(outputs[1]) + 1 # index de la fin de la réponse
