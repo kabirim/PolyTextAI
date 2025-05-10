@@ -48,7 +48,7 @@ async def get_answerPredicition(input: InputQA):
 
 @app.post("/autocorrector")
 async def get_autocorrector(input: InputText):
-    result = get_best_correction(input)
+    result = get_best_correction(input.text,3)
     return {"Output": result}
 
 if __name__ == '__main__':
