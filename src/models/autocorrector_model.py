@@ -8,14 +8,19 @@ from nltk.stem import WordNetLemmatizer
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../data"))) 
 import load_data as ld
 
+def calculate_mispelled_word(input,max_suggestions=3):
+    words,vocab = get_words_from_vocabulary()
+    word_count = count_word_frequency(words)
+    probabilities = calculate_probability(word_count)
+    suggestions = get_best_correction(input, probabilities, vocab, max_suggestions)
+    return suggestions
+
 def get_words_from_vocabulary():
     file_path = 'src/data/data/processed/vocabulary.txt'
     words = ld.loadfileTxt(file_path)
     words = [word.strip() for word in words.split(',')]
     vocab = set(words)
     return words, vocab
-
-words,vocab = get_words_from_vocabulary()
 
 # To calculate the probability of the correct word prediction, we compute how often each word appears in the dataset
 # Words that appear more frequently are likely to be correct and the frequency count of each word is stored in a dictionary
@@ -25,15 +30,11 @@ def count_word_frequency(words):
         word_count[word] = word_count.get(word, 0) + 1
     return word_count
 
-word_count = count_word_frequency(words)
-
 # Using the word frequency data, we calculate the probability of each word
 # Words that appear more often will have a higher probability
 def calculate_probability(word_count):
     total_words = sum(word_count.values())
     return {word: count / total_words for word, count in word_count.items()}
-
-probabilities = calculate_probability(word_count)
 
 lemmatizer = WordNetLemmatizer()
 
@@ -94,7 +95,7 @@ if __name__ == '__main__':
     get_words_from_vocabulary()
 
     user_input = "teste"
-    suggestions = get_best_correction(user_input, probabilities, vocab, max_suggestions=3)
+    suggestions = calculate_mispelled_word(user_input)
 
     print("\n Top suggestions:")
     for suggestion in suggestions:
