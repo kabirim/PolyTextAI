@@ -36,12 +36,11 @@ build/
 Thumbs.db
 
 # 🧠 Modèles et checkpoints
-models/
 checkpoints/
-*.pt
-*.pth
-*.h5
-*.ckpt
+#*.pt
+#*.pth
+#*.h5
+#*.ckpt
 
 # ⚙️ Environnement conda (facultatif)
 env/
