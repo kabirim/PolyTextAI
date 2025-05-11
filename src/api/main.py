@@ -8,7 +8,7 @@ import uvicorn
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))) 
 
 from models.summarizer_model import summairizing
-from predict.predict import predict,predictNextWord,predictAnswer,get_best_correction,predict_automatic_text_completion
+from predict.predict import predict, predict_named_entity_recongnition,predictNextWord,predictAnswer,get_best_correction,predict_automatic_text_completion
 
 class InputData(BaseModel):
     gender: int
@@ -54,6 +54,11 @@ async def get_autocorrector(input: InputText):
 @app.post("/autoTextCompletion")
 async def get_automatic_text_completion(input: InputText):
     result = predict_automatic_text_completion(input.text)
+    return {"Output": result}
+
+@app.post("/namedEntityRecongnition")
+async def get_named_entity_recongnition(input: InputText):
+    result = predict_named_entity_recongnition(input.text)
     return {"Output": result}
 
 if __name__ == '__main__':

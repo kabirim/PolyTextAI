@@ -5,6 +5,8 @@ import sys
 import os
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
+from models.named_entity_recognition_model import get_named_entity_recongnition
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))) 
 from models.automatic_text_completion_model import generte_automatic_text_completion
 from models.questions_answering_bert_squandV1 import give_an_answer
@@ -45,3 +47,6 @@ def get_best_correction(word,max_suggestions=3):
 
 def predict_automatic_text_completion(sentence):
     return generte_automatic_text_completion(sentence)
+
+def predict_named_entity_recongnition(content):
+    return get_named_entity_recongnition(content)
