@@ -1,14 +1,13 @@
 import pandas as pd
-import string
 import re
 import nltk
 from nltk.tokenize import word_tokenize,sent_tokenize
 from nltk.tokenize.treebank import TreebankWordDetokenizer
 
-def loadCsv_data(path):
-    return pd.read_csv(path)
+def load_csv_data(path: str, sep: str = ",", encoding: str = "utf-8") -> pd.DataFrame:
+    return pd.read_csv(path, sep=sep, encoding=encoding)
 
-def loadTxt_data_and_clean(path):
+def load_and_clean_text_from_file(path: str) -> str:
     with open(path, "r", encoding="utf8") as file:
         data = file.read()
 
@@ -41,7 +40,9 @@ def loadTxt_data_and_clean(path):
     final_text = '. '.join(cleaned_sentences) + '.'
     return final_text
 
-def loadfileTxt(path):
-    with open(path, "r", encoding="utf8") as file:
-        data = file.read()
-    return data
+def load_txt_file(path: str) -> str:
+    try:
+        with open(path, "r", encoding="utf8") as file:
+            return file.read()
+    except FileNotFoundError:
+        raise FileNotFoundError(f"The file at the location '{path}' is not found")

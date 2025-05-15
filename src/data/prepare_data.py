@@ -15,7 +15,7 @@ def prepare_data():
     if not os.path.exists(raw_path):
         raise FileNotFoundError(f'{raw_path} not found')
 
-    df = ld.loadCsv_data(raw_path)
+    df = ld.load_csv_data(raw_path)
     df = encode_features(df)
     os.makedirs(os.path.dirname(processed_path), exist_ok=True)
     df.to_csv(processed_path, index=False)
@@ -27,7 +27,7 @@ def read_text_data():
     if not os.path.exists(raw_path):
         raise FileNotFoundError(f'{raw_path} not found')
     
-    df = ld.loadTxt_data_and_clean(raw_path)
+    df = ld.load_and_clean_text_from_file(raw_path)
     print(f'Data prepared and saved to {df}')
 
 def extract_all_words_sequences():
@@ -38,7 +38,7 @@ def extract_all_words_sequences():
     if not os.path.exists(file_path):
         raise FileNotFoundError(f'{file_path} not found')
     
-    df = ld.loadfileTxt(file_path)
+    df = ld.load_txt_file(file_path)
     # Extraction des mots
     words = re.findall(r'\w+', df)
     os.makedirs(os.path.dirname(processed_path), exist_ok=True)
