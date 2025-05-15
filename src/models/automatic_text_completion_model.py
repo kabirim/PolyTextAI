@@ -8,7 +8,7 @@ bart_model = BartForConditionalGeneration.from_pretrained("facebook/bart-large",
 # loading the raw text tokenizer for the BART model
 tokenizer = BartTokenizer.from_pretrained("facebook/bart-large")
 
-def generte_automatic_text_completion(sentence):
+def generate_automatic_text_completion(sentence):
  
     # preprocessing(tokenizing) the text as input for the BART model 
     tokenized_sent = tokenizer(sentence, return_tensors="pt")
@@ -22,4 +22,4 @@ def generte_automatic_text_completion(sentence):
 
 if __name__ == '__main__':
     sent = "GeekforGeeks has a <mask> article on BART."
-    generte_automatic_text_completion(sent)
+    generate_automatic_text_completion(sent)
