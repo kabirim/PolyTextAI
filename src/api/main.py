@@ -9,7 +9,7 @@ from fastapi import status
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))) 
 
 from models.summarizer_model import summairizing
-from predict.predict import cleanerRawText, predict, predict_named_entity_recongnition,predictNextWord,predictAnswer,get_best_correction,predict_automatic_text_completion
+from predict.predict import cleaner_raw_text, predict, predict_named_entity_recongnition,predictNextWord,predictAnswer,get_best_correction,predict_automatic_text_completion
 
 class InputData(BaseModel):
     gender: int
@@ -40,7 +40,7 @@ app = FastAPI(
 
 @app.post("/text/clean",status_code=status.HTTP_200_OK )
 async def clean_text(input: InputText):
-    result = asyncio.run(cleanerRawText(input.text))
+    result = asyncio.run(cleaner_raw_text(input.text))
     return {"Output": result}
 
 @app.post("/text/summary",status_code=status.HTTP_200_OK )
