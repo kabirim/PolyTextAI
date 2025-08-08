@@ -11,6 +11,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
 from models.automatic_text_completion_model import generate_automatic_text_completion
 from models.questions_answering_bert_squandV1 import give_an_answer
 from models.autocorrector_model import calculate_mispelled_word
+from models.cleanRawText import clean_raw_text
 
 def predict(input_dict):
     with open('src/models/models/model.pkl', 'rb') as f:
@@ -50,3 +51,6 @@ def predict_automatic_text_completion(sentence):
 
 def predict_named_entity_recongnition(content):
     return get_named_entity_recongnition(content)
+
+def cleanerRawText(inputText):
+    return clean_raw_text(inputText)
