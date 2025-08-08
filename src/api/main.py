@@ -9,7 +9,7 @@ from fastapi import status
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))) 
 
 from models.summarizer_model import summairizing
-from predict.predict import predict, predict_named_entity_recongnition,predictNextWord,predictAnswer,get_best_correction,predict_automatic_text_completion
+from predict.predict import cleanerRawText, predict, predict_named_entity_recongnition,predictNextWord,predictAnswer,get_best_correction,predict_automatic_text_completion
 
 class InputData(BaseModel):
     gender: int
@@ -23,14 +23,25 @@ class InputQA(BaseModel):
     context: str = Field(..., description="Le texte dans lequel on cherche la réponse")
     querie: str = Field(..., description="Le text de question à poser")
     answer: str = Field(..., description="Le text de réponse correspondant à la question")
+    
+app = FastAPI(
+    title="PolyTextAI",
+    docs_url="/swagger",          # Swagger UI
+    redoc_url="/redoc",           # ReDoc UI
+    openapi_url="/openapi.json",  # OpenAPI schema
+    swagger_ui_parameters={"syntaxHighlight": {"theme": "obsidian"}}
+)
 
-app = FastAPI(swagger_ui_parameters={"syntaxHighlight": {"theme": "obsidian"}})
+# @app.post("/predict/churn", status_code=status.HTTP_200_OK)
+# async def predict_churn(data: InputData):
+#     input_dict = data.model_dump()  
+#     prediction = predict(input_dict)
+#     return {"prediction": int(prediction)}
 
-@app.post("/predict/churn", status_code=status.HTTP_200_OK)
-async def predict_churn(data: InputData):
-    input_dict = data.model_dump()  
-    prediction = predict(input_dict)
-    return {"prediction": int(prediction)}
+@app.post("/text/clean",status_code=status.HTTP_200_OK )
+async def clean_text(input: InputText):
+    result = asyncio.run(cleanerRawText(input.text))
+    return {"Output": result}
 
 @app.post("/text/summary",status_code=status.HTTP_200_OK )
 async def summarize_text(input: InputText):
