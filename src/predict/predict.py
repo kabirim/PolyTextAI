@@ -52,5 +52,5 @@ def predict_automatic_text_completion(sentence):
 def predict_named_entity_recongnition(content):
     return get_named_entity_recongnition(content)
 
-def cleanerRawText(inputText):
+def cleaner_raw_text(inputText):
     return clean_raw_text(inputText)
