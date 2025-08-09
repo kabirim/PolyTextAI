@@ -40,22 +40,25 @@ class CleanOptions:
     return_meta: bool = False            # True -> dict {"lang","text","tokens"}
 
     # Comportement de base (léger par défaut)
-    lowercase: bool = False              # ⚠️ on garde la casse pour les technos
+    lowercase: bool = False              # ⚠️ garder la casse pour technos
     strip_accents: bool = False
     remove_emojis: bool = True
 
     # HTML/whitespace
     keep_hashtag_words: bool = True
     remove_mentions: bool = True
-    preserve_linebreaks: bool = True     # garde la structure du CV (lignes/puces)
-    collapse_blank_lines: bool = True    # compacter les \n\n\n -> \n\n
+    preserve_linebreaks: bool = True     # garder la structure (lignes/puces)
+    collapse_blank_lines: bool = True    # compacter \n\n\n -> \n\n
 
     # Ponc./digits/stopwords
     remove_punctuation: bool = False     # ⚠️ par défaut on garde la ponctuation
-    punctuation_keep: Set[str] = None    # caractères à préserver si on retire la ponctuation
+    punctuation_keep: Set[str] = None    # si on retire la ponct., ces symboles sont préservés
     remove_digits: bool = False
     remove_stopwords: bool = False       # ⚠️ éviter de supprimer "R", "C", etc.
     min_token_len: int = 1
+
+    # Retour texte nettoyé (non tokenisé)
+    return_cleaned_text: bool = True
 
     # Langue
     lang_threshold: float = 0.50
@@ -63,7 +66,7 @@ class CleanOptions:
     def __post_init__(self):
         if self.punctuation_keep is None:
             # Symboles fréquents dans les technos
-            self.punctuation_keep = set(["+", "#", ".", "-", "_", "/", "&"])
+            self.punctuation_keep = {"+", "#", ".", "-", "_", "/", "&"}
 
 def remove_all_emojis(text: str) -> str:
     """Supprime tous les emojis Unicode."""
@@ -106,6 +109,7 @@ def clean_text_from_html(
     if preserve_linebreaks:
         # Insère des \n avant de supprimer le reste des balises
         text = re.sub(r"(?i)</?(br|p|div|li|ul|ol|h[1-6]|section|article|hr)[^>]*>", "\n", text)
+    
     # Supprime le reste des balises
     text = re.sub(r"<[^>]+>", " ", text)
 
@@ -156,6 +160,30 @@ def tokenize_text(text: str) -> List[str]:
     """Tokenisation simple via NLTK."""
     return word_tokenize(text)
 
+def preserve_tokenize_text(text: str) -> List[str]:
+    """
+    Tokenisation qui préserve les symboles fréquents dans les noms de technologies :
+    C#, C++, .NET, Node.js, ASP.NET, Docker/Kubernetes, etc.
+    """
+    pattern = r"[A-Za-z0-9]+(?:[+#./_-][A-Za-z0-9]+)*|[+#./_-][A-Za-z0-9]+"
+    return re.findall(pattern, text)
+
+def tokenize_text_preserve_symbols(text: str) -> List[str]:
+    """
+    Tokenisation qui préserve les symboles fréquents dans les noms de technologies :
+    C#, C++, .NET, Node.js, ASP.NET, Docker/Kubernetes, etc.
+    """
+    pattern = re.compile(r"""
+        # Mot alphanumérique, éventuellement relié par . / _ -, puis
+        #    éventuellement terminé par un ou plusieurs # ou +
+        (?:[A-Za-z0-9]+(?:[./_-][A-Za-z0-9]+)*(?:[#+]+)?) 
+        |
+        # Mot qui COMMENCE par un symbole (. / _ -), puis alphanumériques,
+        #    éventuellement reliés, puis suffixe #/+ optionnel
+        (?:[.#/_-][A-Za-z0-9]+(?:[./_-][A-Za-z0-9]+)*(?:[#+]+)?) 
+    """, re.VERBOSE)
+    return pattern.findall(text)
+
 def remove_punc_keep(text: str, keep: Set[str]) -> str:
     """
     Retire la ponctuation ASCII standard en préservant certains symboles (ex: + # . - _ / &).
@@ -181,6 +209,7 @@ def clean_raw_text(
     - Garde casse et symboles techniques.
     - Préserve la structure (lignes/puces).
     - Optionnel : suppression emojis, accents, stopwords, ponctuation (avec liste de symboles préservés).
+    - Sortie : texte nettoyé, tokens, ou méta.
     """
     if options is None:
         options = CleanOptions()
@@ -193,7 +222,7 @@ def clean_raw_text(
     if options.lowercase:
         text = text.lower()
 
-    # Détection de langue (sur le texte tel quel)
+    # Détection de langue
     lang = detect_lang_langid(text, threshold=options.lang_threshold)
 
     # Emojis
@@ -229,22 +258,24 @@ def clean_raw_text(
     else:
         text = re.sub(r"\s+", " ", text).strip()
 
-    # Tokenisation
-    tokens = tokenize_text(text)
+    # Tokenisation (préserve C#, C++, .NET, Node.js, ...)
+    tokens = tokenize_text_preserve_symbols(text)
 
     # Stopwords + longueur minimale
     if options.remove_stopwords:
         sw = _get_stopwords(lang)
-        tokens = [t for t in tokens if t not in sw]
+        tokens = [t for t in tokens if t.lower() not in sw]
 
     if options.min_token_len > 1:
         tokens = [t for t in tokens if len(t) >= options.min_token_len]
 
-    # Sortie
+    # Sorties (ordre de priorité)
     if options.return_meta:
-        return {"lang": lang, "text": " ".join(tokens) if not options.return_tokens else None, "tokens": tokens}
+        return {"lang": lang, "text": None if options.return_tokens else " ".join(tokens), "tokens": tokens}
     if options.return_tokens:
         return tokens
+    if options.return_cleaned_text:
+        return text
     return " ".join(tokens)
 
 # --- Exemples d'utilisation ---
