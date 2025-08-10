@@ -41,7 +41,7 @@ app = FastAPI(
 @app.post("/api/text/clean",status_code=status.HTTP_200_OK )
 async def clean_text(input: InputText):
     result = cleaner_raw_text(input.text)
-    return {result}
+    return result
 
 @app.post("/api/text/summary",status_code=status.HTTP_200_OK )
 async def summarize_text(input: InputText):
