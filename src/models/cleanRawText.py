@@ -47,7 +47,7 @@ class CleanOptions:
     # HTML/whitespace
     keep_hashtag_words: bool = True
     remove_mentions: bool = True
-    preserve_linebreaks: bool = True     # garder la structure (lignes/puces)
+    preserve_linebreaks: bool = False     # garder la structure (lignes/puces)
     collapse_blank_lines: bool = True    # compacter \n\n\n -> \n\n
 
     # Ponc./digits/stopwords
@@ -280,10 +280,7 @@ def clean_raw_text(
 
 # --- Exemples d'utilisation ---
 if __name__ == "__main__":
-    s = """Bonjour! <b>Ceci</b> est un test 😊.
-    Compétences: C++, C#, .NET, React.js, Node.js, Docker/Kubernetes
-    Site: https://exemple.fr #NLP @moi Email: a.b@example.com
-    - Expérience: DevOps - AWS & Terraform
+    s = """      Job Title:\r\n\r\n      C# Developer\r\n\r\n\r\n\r\n      Location:\r\n\r\n      Paris, France (Hybrid - 2 days remote)\r\n\r\n\r\n\r\n      Employment Type:\r\n\r\n      Full-time, Permanent\r\n\r\n\r\n\r\n      Company Description:\r\n\r\n      We are a fast-growing software company specializing in digital transformation and enterprise\r\n\r\n      solutions for international clients. Our team is made up of passionate engineers working with the\r\n\r\n      latest technologies in a collaborative and agile environment.\r\n\r\n\r\n\r\n      Job Description:\r\n\r\n      We are looking for a skilled and motivated C# Developer to join our backend development team.\r\n\r\n      You will be responsible for designing, developing, and maintaining high-performance APIs and\r\n\r\n      services used across our platforms.\r\n\r\n\r\n\r\n      Responsibilities:\r\n\r\n      - Design, implement, and maintain backend services using C# and .NET 8.\r\n\r\n      - Collaborate with front-end developers, product managers, and QA engineers to deliver features on\r\n\r\n      time.\r\n\r\n      - Write clean, scalable, and testable code following best practices and SOLID principles.\r\n\r\n      - Participate in code reviews and contribute to continuous improvement of the development process.\r\n\r\n      - Troubleshoot and debug applications in production and staging environments.\r\n\r\n\r\n      Requirements:\r\n\r\n      - 3+ years of experience in software development with C# and .NET.\r\n\r\n      - Solid understanding of object-oriented programming, REST APIs, and asynchronous patterns.\r\n\r\n      - Experience with Entity Framework Core, SQL Server, and Git.\r\n\r\n      - Familiarity with Clean Architecture and dependency injection.\r\n\r\n      - Good communication skills and ability to work in a team.\r\n\r\n\r\n\r\n      Nice to Have:\r\n\r\n      - Knowledge of Azure or AWS cloud services.\r\n\r\n      - Experience with Docker and microservices architecture.\r\n\r\n      - Front-end skills with React or Angular are a plus.\r\n\r\n\r\n\r\n      Language Requirements:\r\n\r\n      - Proficiency in English (written and spoken).\r\n\r\n      - French is a plus, but not mandatory.\r\n\r\n\r\n\r\n      What We Offer:\r\n\r\n      - Competitive salary\r\n\r\n      - Flexible working hours and hybrid work model\r\n\r\n      - Team events, technical training, and certification opportunities\r\n\r\n      - A supportive and dynamic team culture\r\n\r\n\r\n
     """
     print(clean_raw_text(s))  # string nettoyée par défaut (light clean)
     print(clean_raw_text(s, CleanOptions(return_tokens=True, strip_accents=True)))
