@@ -6,10 +6,12 @@ from typing import List
 import asyncio
 import uvicorn
 from fastapi import status
+from typing import List, Optional
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))) 
 
 from models.summarizer_model import summairizing
-from predict.predict import cleaner_raw_text, predict, predict_named_entity_recongnition,predictNextWord,predictAnswer,get_best_correction,predict_automatic_text_completion
+from predict.predict import score_cv,cleaner_raw_text, predict, predict_named_entity_recongnition,predictNextWord,predictAnswer,get_best_correction,predict_automatic_text_completion
 
 class InputData(BaseModel):
     gender: int
@@ -23,7 +25,32 @@ class InputQA(BaseModel):
     context: str = Field(..., description="Le texte dans lequel on cherche la réponse")
     querie: str = Field(..., description="Le text de question à poser")
     answer: str = Field(..., description="Le text de réponse correspondant à la question")
-    
+
+## Score CV    
+class CV(BaseModel):
+    skills: Optional[List[str]] = []
+    tools: Optional[List[str]] = []
+    experience: int = 0
+    seniority: Optional[List[str]] = []
+    certifications: Optional[List[str]] = []
+    languages: Optional[str]= ""
+    location: Optional[str] = ""
+
+class JobOffer(BaseModel):
+    skills: Optional[List[str]] = []
+    tools: Optional[List[str]] = []
+    experience: int = 0
+    seniority: Optional[List[str]] = []
+    certifications: Optional[List[str]] = []
+    languages: Optional[str]= ""
+    location: Optional[str] = ""
+
+class ScoringRequest(BaseModel):
+    cv: CV
+    job: JobOffer
+
+##End Score
+
 app = FastAPI(
     title="PolyTextAI",
     docs_url="/swagger",          # Swagger UI
@@ -72,6 +99,11 @@ async def complete_text(input: InputText):
 async def named_entity_recognition(input: InputText):
     result = predict_named_entity_recongnition(input.text)
     return {"Output": result}
+
+@app.post("/api/score",status_code=status.HTTP_200_OK)
+async def score_cv_job(request: ScoringRequest):
+    result = score_cv(request.cv.model_dump(), request.job.model_dump())
+    return {result}
 
 if __name__ == '__main__':
     uvicorn.run(app,host='127.0.0.1',port=8001)
