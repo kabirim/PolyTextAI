@@ -103,7 +103,7 @@ async def named_entity_recognition(input: InputText):
 @app.post("/api/score",status_code=status.HTTP_200_OK)
 async def score_cv_job(request: ScoringRequest):
     result = score_cv(request.cv.model_dump(), request.job.model_dump())
-    return {result}
+    return result
 
 if __name__ == '__main__':
     uvicorn.run(app,host='127.0.0.1',port=8001)

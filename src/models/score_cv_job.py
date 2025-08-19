@@ -26,5 +26,5 @@ def match_years_of_experience(cv_years, jd_years):
         return 100.0
     return round((cv_years / jd_years) * 100, 2)
 
-def match_exact(value1, value2):
-    return 100.0 if value1.lower() == value2.lower() else 0.0
+def match_exact(value1, value2):   
+    return 100.0 if value1[0].lower() == value2[0].lower() else 0.0

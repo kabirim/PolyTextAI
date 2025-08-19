@@ -61,7 +61,7 @@ def score_cv(cv, job):
         "skills": compute_similarity(cv.get("skills", []), job.get("skills", [])),
         "tools": compute_similarity(cv.get("tools", []), job.get("tools", [])),
         "experience": match_years_of_experience(cv.get("experience", 0), job.get("experience", 0)),
-        "seniority": match_exact(cv.get("seniority", ""), job.get("seniority", "")),
+        "seniority": match_exact(cv.get("seniority", []), job.get("seniority", [])),
         "certifications": compute_similarity(cv.get("certifications", []), job.get("certifications", [])),
         "languages": compute_similarity(cv.get("languages", []), job.get("languages", [])),
         "location": match_exact(cv.get("location", ""), job.get("location", "")),
