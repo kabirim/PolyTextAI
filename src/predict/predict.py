@@ -12,7 +12,7 @@ from models.automatic_text_completion_model import generate_automatic_text_compl
 from models.questions_answering_bert_squandV1 import give_an_answer
 from models.autocorrector_model import calculate_mispelled_word
 from models.cleanRawText import clean_raw_text
-from models.score_cv_job import compute_similarity, match_years_of_experience, match_exact
+from models.score_cv_job import compute_similarity, match_years_of_experience, match_exact, match_any_overlap
 
 def predict(input_dict):
     with open('src/models/models/model.pkl', 'rb') as f:
@@ -61,13 +61,12 @@ def score_cv(cv, job):
         "skills": compute_similarity(cv.get("skills", []), job.get("skills", [])),
         "tools": compute_similarity(cv.get("tools", []), job.get("tools", [])),
         "experience": match_years_of_experience(cv.get("experience", 0), job.get("experience", 0)),
-        "seniority": match_exact(cv.get("seniority", []), job.get("seniority", [])),
+        "seniority": match_exact(cv.get("seniority", ""), job.get("seniority", "")),
         "certifications": compute_similarity(cv.get("certifications", []), job.get("certifications", [])),
         "languages": compute_similarity(cv.get("languages", []), job.get("languages", [])),
-        "location": match_exact(cv.get("location", ""), job.get("location", "")),
+        "locations": match_any_overlap(cv.get("locations", []), job.get("locations", [])),
     }
 
-    # Pondération personnalisée (modifiable)
     weights = {
         "skills": 0.3,
         "tools": 0.2,
@@ -75,10 +74,10 @@ def score_cv(cv, job):
         "seniority": 0.1,
         "certifications": 0.05,
         "languages": 0.1,
-        "location": 0.05
+        "locations": 0.05
     }
 
-    total_score = sum(scores[k] * weights[k] for k in scores)
+    total_score = sum(scores[key] * weights[key] for key in scores)
 
     return {
         "score": round(total_score, 2),

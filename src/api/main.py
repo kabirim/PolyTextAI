@@ -31,19 +31,19 @@ class CV(BaseModel):
     skills: Optional[List[str]] = []
     tools: Optional[List[str]] = []
     experience: int = 0
-    seniority: Optional[List[str]] = []
+    seniority: Optional[str] = ""
     certifications: Optional[List[str]] = []
-    languages: Optional[str]= ""
-    location: Optional[str] = ""
+    languages: Optional[List[str]] = []
+    locations: Optional[List[str]] = []
 
 class JobOffer(BaseModel):
     skills: Optional[List[str]] = []
     tools: Optional[List[str]] = []
     experience: int = 0
-    seniority: Optional[List[str]] = []
+    seniority: Optional[str] = ""
     certifications: Optional[List[str]] = []
-    languages: Optional[str]= ""
-    location: Optional[str] = ""
+    languages: Optional[List[str]] = []
+    locations: Optional[List[str]] = []
 
 class ScoringRequest(BaseModel):
     cv: CV
