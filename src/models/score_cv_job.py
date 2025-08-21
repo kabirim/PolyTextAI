@@ -2,7 +2,7 @@ from sentence_transformers import SentenceTransformer, util
 
 model = SentenceTransformer("all-MiniLM-L6-v2")  # Léger, CPU-friendly
 
-def compute_similarity(list1, list2):
+def compute_similarity(list1, list2, threshold=0.4):
     if not list1 or not list2:
         return 0.0
     
@@ -16,10 +16,17 @@ def compute_similarity(list1, list2):
     #Pour chaque élément de list1, garde la meilleure correspondance dans list2
     max_similarities = cosine_scores.max(dim=1).values
     
-    #Fait la moyenne de ces correspondances
-    avg_score = max_similarities.mean().item()
+    # Applique un seuil : on ignore les similarités trop faibles
+    filtered = [score.item() for score in max_similarities if score.item() >= threshold]
     
-    #Retourne le résultat en pourcentage
+    # Si aucune similarité dépasse le seuil, on retourne 0
+    if not filtered:
+        return 0.0
+
+    # Moyenne des similarités conservées
+    avg_score = sum(filtered) / len(filtered)
+    
+    # Retourne le résultat en pourcentage
     return round(avg_score * 100, 2)
 
 def match_years_of_experience(cv_years, jd_years):

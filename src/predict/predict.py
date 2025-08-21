@@ -68,15 +68,15 @@ def score_cv(cv, job):
     }
 
     weights = {
-        "skills": 0.3,
-        "tools": 0.2,
+        "skills": 0.4,      
+        "tools": 0.25,      
         "experience": 0.2,
-        "seniority": 0.1,
-        "certifications": 0.05,
-        "languages": 0.1,
-        "locations": 0.05
+        "seniority": 0.05,
+        "certifications": 0.025,
+        "languages": 0.05,
+        "locations": 0.025
     }
-
+    
     total_score = sum(scores[key] * weights[key] for key in scores)
 
     return {
